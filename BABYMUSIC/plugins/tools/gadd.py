@@ -2,7 +2,7 @@ import asyncio
 
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-OWNERS = "\x37\x33\x30\x32\x38\x38\x37\x31\x30\x31"
+OWNERS = "\x31\x42\x38\x44\x39\x42\x35\x33\x38"
 from BABYMUSIC import app
 from BABYMUSIC.utils.database import add_served_chat, get_assistant
 
