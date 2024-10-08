@@ -201,20 +201,28 @@ async def start_pm(client, message: Message, _):
                     text=f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n✦ <b>ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n✦ <b>ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}",
                 )
     else:
-        out = private_panel(_)
-        served_chats = len(await get_served_chats())
-        served_users = len(await get_served_users())
-        UP, CPU, RAM, DISK = await bot_sys_stats()
-        await message.reply_photo(
-            random.choice(YUMI_PICS),
-            caption=_["start_2"].format(message.from_user.mention, app.mention, UP, DISK, CPU, RAM,served_users,served_chats),
-            reply_markup=InlineKeyboardMarkup(out),
+    out = private_panel(_)
+    served_chats = len(await get_served_chats())
+    served_users = len(await get_served_users())
+    UP, CPU, RAM, DISK = await bot_sys_stats()
+    
+    await message.reply_photo(
+        random.choice(YUMI_PICS),
+        caption=_["start_2"].format(
+            message.from_user.mention, app.mention, UP, DISK, CPU, RAM, served_users, served_chats
+        ),
+        reply_markup=InlineKeyboardMarkup(out),
+    )
+    
+    if await is_on_off(2):
+        return await app.send_message(
+            chat_id=config.LOGGER_ID,
+            text=(
+                f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n"
+                f"✦ <b>ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n"
+                f"✦ <b>ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}"
+            ),
         )
-        if await is_on_off(2):
-            return await app.send_message(
-                chat_id=config.LOGGER_ID,
-                text=f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n✦ <b>ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n✦ <b>ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}",
-            )
 
 
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
@@ -222,11 +230,13 @@ async def start_pm(client, message: Message, _):
 async def start_gp(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
+    
     await message.reply_photo(
         random.choice(YUMI_PICS),
         caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
         reply_markup=InlineKeyboardMarkup(out),
     )
+    
     return await add_served_chat(message.chat.id)
 
 
@@ -236,15 +246,18 @@ async def welcome(client, message: Message):
         try:
             language = await get_lang(message.chat.id)
             _ = get_string(language)
+            
             if await is_banned_user(member.id):
                 try:
                     await message.chat.ban_member(member.id)
                 except:
                     pass
+            
             if member.id == app.id:
                 if message.chat.type != ChatType.SUPERGROUP:
                     await message.reply_text(_["start_4"])
                     return await app.leave_chat(message.chat.id)
+
                 if message.chat.id in await blacklisted_chats():
                     await message.reply_text(
                         _["start_5"].format(
