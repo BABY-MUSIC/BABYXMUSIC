@@ -1,5 +1,6 @@
 import time
 import random
+import asyncio  # Add this import
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -24,8 +25,6 @@ from BABYMUSIC.utils.formatters import get_readable_time
 from BABYMUSIC.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS
 from strings import get_string
-
-
 
 YUMI_PICS = [
 "https://graph.org/file/f76fd86d1936d45a63c64.jpg",
@@ -57,10 +56,7 @@ YUMI_PICS = [
 "https://graph.org/file/5846b9214eaf12c3ed100.jpg",
 "https://graph.org/file/ad4f9beb4d526e6615e18.jpg",
 "https://graph.org/file/3514efaabe774e4f181f2.jpg",
-
 ]
-
-
 
 # Function to simulate the progress bar animation
 async def send_loading_animation(message: Message):
@@ -97,7 +93,7 @@ async def start_pm(client, message: Message, _):
     # Check for additional commands (like help)
     if len(message.text.split()) > 1:
         name = message.text.split(None, 1)[1]
-        if name[0:4] == "help":
+        if name.startswith("help"):
             keyboard = help_pannel(_)
             return await message.reply_photo(
                 random.choice(YUMI_PICS),
@@ -105,16 +101,67 @@ async def start_pm(client, message: Message, _):
                 reply_markup=keyboard,
             )
 
-    # Show private panel buttons after animation is deleted
-    buttons = private_panel(_)
-    await message.reply_text("Welcome to the bot!", reply_markup=buttons)
-        if name[0:3] == "sud":
+        elif name.startswith("sud"):
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOGGER_ID,
-                    text=f"✦ {message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>✦ ᴜsᴇʀ ɪᴅ ➠</b> <code>{message.from_user.id}</code>\n<b>✦ ᴜsᴇʀɴᴀᴍᴇ ➠</b> @{message.from_user.username}",
+                    text=f"✦ {message.from_user.mention} just started the bot to check <b>sudolist</b>.\n\n<b>✦ User ID ➠</b> <code>{message.from_user.id}</code>\n<b>✦ Username ➠</b> @{message.from_user.username}",
                 )
+        
+        elif name.startswith("inf"):
+            m = await message.reply_text("🔎")
+            query = name.replace("info_", "", 1)
+            results = VideosSearch(query, limit=1)
+            for result in (await results.next())["result"]:
+                title = result["title"]
+                duration = result["duration"]
+                views = result["viewCount"]["short"]
+                thumbnail = result["thumbnails"][0]["url"].split("?")[0]
+                channellink = result["channel"]["link"]
+                channel = result["channel"]["name"]
+                link = result["link"]
+                published = result["publishedTime"]
+            
+            searched_text = _["start_6"].format(
+                title, duration, views, published, channellink, channel, app.mention
+            )
+            key = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(text=_["S_B_8"], url=link),
+                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_CHAT),
+                    ],
+                ]
+            )
+            await m.delete()
+            await app.send_photo(
+                chat_id=message.chat.id,
+                photo=thumbnail,
+                caption=searched_text,
+                reply_markup=key,
+            )
+            if await is_on_off(2):
+                return await app.send_message(
+                    chat_id=config.LOGGER_ID,
+                    text=f"✦ {message.from_user.mention} started the bot to check <b>track information</b>.\n\n✦ <b>User ID ➠</b> <code>{message.from_user.id}</code>\n✦ <b>Username ➠</b> @{message.from_user.username}",
+                )
+    
+    else:
+        out = private_panel(_)
+        served_chats = len(await get_served_chats())
+        served_users = len(await get_served_users())
+        UP, CPU, RAM, DISK = await bot_sys_stats()
+        await message.reply_photo(
+            random.choice(YUMI_PICS),
+            caption=_["start_2"].format(message.from_user.mention, app.mention, UP, DISK, CPU, RAM, served_users, served_chats),
+            reply_markup=InlineKeyboardMarkup(out),
+        )
+        if await is_on_off(2):
+            return await app.send_message(
+                chat_id=config.LOGGER_ID,
+                text=f"✦ {message.from_user.mention} just started the bot.\n\n✦ <b>User ID ➠</b> <code>{message.from_user.id}</code>\n✦ <b>Username ➠</b> @{message.from_user.username}",
+            )
             return
         if name[0:3] == "inf":
             m = await message.reply_text("🔎")
