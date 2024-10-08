@@ -62,10 +62,39 @@ YUMI_PICS = [
 
 
 
+# Function to simulate the progress bar animation
+async def send_loading_animation(message: Message):
+    progress_bar = [
+        "□□□□□□□□□□ 0%",
+        "■□□□□□□□□□ 10%",
+        "■■□□□□□□□□ 20%",
+        "■■■□□□□□□□ 30%",
+        "■■■■□□□□□□ 40%",
+        "■■■■■□□□□□ 50%",
+        "■■■■■■□□□□ 60%",
+        "■■■■■■■□□□ 70%",
+        "■■■■■■■■□□ 80%",
+        "■■■■■■■■■□ 90%",
+        "■■■■■■■■■■ 100%"
+    ]
+    
+    for bar in progress_bar:
+        await message.edit(text=bar)
+        await asyncio.sleep(0.5)  # Delay between updates
+
+
+# Modified Start command with filters and animation
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
+    
+    # Start with animation
+    start_msg = await message.reply_text("Starting...")
+    await send_loading_animation(start_msg)  # Show animation
+    await start_msg.delete()  # Delete the message with the loading animation
+    
+    # Check for additional commands (like help)
     if len(message.text.split()) > 1:
         name = message.text.split(None, 1)[1]
         if name[0:4] == "help":
@@ -75,6 +104,10 @@ async def start_pm(client, message: Message, _):
                 caption=_["help_1"].format(config.SUPPORT_CHAT),
                 reply_markup=keyboard,
             )
+
+    # Show private panel buttons after animation is deleted
+    buttons = private_panel(_)
+    await message.reply_text("Welcome to the bot!", reply_markup=buttons)
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
