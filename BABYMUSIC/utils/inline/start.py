@@ -5,38 +5,6 @@ import asyncio
 from BABYMUSIC import app
 
 
-# Function to simulate the progress bar animation
-async def send_loading_animation(message: Message):
-    progress_bar = [
-        "□□□□□□□□□□ 0%",
-        "■□□□□□□□□□ 10%",
-        "■■□□□□□□□□ 20%",
-        "■■■□□□□□□□ 30%",
-        "■■■■□□□□□□ 40%",
-        "■■■■■□□□□□ 50%",
-        "■■■■■■□□□□ 60%",
-        "■■■■■■■□□□ 70%",
-        "■■■■■■■■□□ 80%",
-        "■■■■■■■■■□ 90%",
-        "■■■■■■■■■■ 100%"
-    ]
-    
-    for bar in progress_bar:
-        await message.edit(text=bar)
-        await asyncio.sleep(0.5)  # Delay between updates
-
-# Start command to handle animation and start message
-@app.on_message(filters.command("start"))
-async def start(client, message):
-    start_msg = await message.reply_text("Starting...")
-    await send_loading_animation(start_msg)  # Call the animation function
-    await start_msg.delete()  # Delete the message with the loading animation
-
-    # Add private panel buttons after animation is deleted
-    buttons = private_panel(_)  # Assuming you pass the correct localization argument "_"
-    await message.reply_text("Welcome to the bot!", reply_markup=buttons)
-
-
 # Start panel for inline buttons
 def start_panel(_):
     buttons = [
