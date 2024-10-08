@@ -30,10 +30,10 @@ async def send_loading_animation(message: Message):
 async def start(client, message):
     start_msg = await message.reply_text("Starting...")
     await send_loading_animation(start_msg)  # Call the animation function
-    await start_msg.edit("Bot started!")  # Final message after completion
+    await start_msg.delete()  # Delete the message with the loading animation
 
-    # Add start panel buttons after animation
-    buttons = start_panel(_)  # Assuming you pass the correct localization argument "_"
+    # Add private panel buttons after animation is deleted
+    buttons = private_panel(_)  # Assuming you pass the correct localization argument "_"
     await message.reply_text("Welcome to the bot!", reply_markup=buttons)
 
 
